@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Malla Interactiva Psicología USS 2022</title>
+    <style>
+        :root {
+            --color-basica: #A9A9A9;       /* Gris - Área Psicológica Básica */
+            --color-profesional: #008080;  /* Verde Azulado - Área Profesional */
+            --color-investigacion: #FF7F50;/* Coral - Área Investigación */
+            --color-integral: #DAA520;     /* Dorado - Formación Integral */
+            --bg-body: #f4f4f9;
+            --card-bg: white;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 { text-align: center; color: #333; }
+        .leyenda { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .leyenda-item { display: flex; align-items: center; font-size: 0.9em; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; margin-right: 5px; }
+
+        /* Contenedor Principal (Grid de 10 Semestres) */
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); /* 10 Semestres */
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        /* Columna del Semestre */
+        .semestre-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 140px;
+        }
+
+        .semestre-header {
+            text-align: center;
+            font-weight: bold;
+            background: #333;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* Tarjeta de Asignatura */
+        .asignatura {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 5px solid #ccc; /* Color por defecto */
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .asignatura:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
+        /* Estados Interactivos */
+        .asignatura.approved { background-color: #e0f7fa; opacity: 0.6; text-decoration: line-through; }
+        .asignatura.prerequisito-activo { border: 2px solid red; animation: pulse 1.5s infinite; }
+        
+        /* Colores por Área (Bordes) */
+        .area-basica { border-left-color: var(--color-basica) !important; }
+        .area-profesional { border-left-color: var(--color-profesional) !important; }
+        .area-investigacion { border-left-color: var(--color-investigacion) !important; }
+        .area-integral { border-left-color: var(--color-integral) !important; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        /* Responsive simple */
+        @media (max-width: 1200px) {
+            .malla-container { grid-template-columns: repeat(5, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Malla Curricular Psicología (Plan 2022)</h1>
+    <p style="text-align:center; font-style:italic;">Haz clic en una asignatura para marcarla como aprobada.</p>
+
+    <div class="leyenda">
+        <div class="leyenda-item"><div class="dot" style="background:var(--color-basica)"></div>Área Básica</div>
+        <div class="leyenda-item"><div class="dot" style="background:var(--color-profesional)"></div>Área Profesional</div>
+        <div class="leyenda-item"><div class="dot" style="background:var(--color-investigacion)"></div>Área Investigación</div>
+        <div class="leyenda-item"><div class="dot" style="background:var(--color-integral)"></div>Formación Integral</div>
+    </div>
+
+    <div class="malla-container" id="mallaGrid">
+        </div>
+
+<script>
+    // Datos extraídos del PDF "Malla Psicología Diurno Plan 2022 (1).pdf"
+    // Se ha inferido la categoría basada en la posición y nomenclatura típica.
+    const mallaData = [
+        // Semestre 1 [cite: 14]
+        { id: "S1-1", nombre: "Estrategias para el Aprendizaje", sem: 1, area: "integral" },
+        { id: "S1-2", nombre: "Fundamentos Biológicos del Comp.", sem: 1, area: "basica" },
+        { id: "S1-3", nombre: "Fundamentos Filosóficos", sem: 1, area: "basica" },
+        { id: "S1-4", nombre: "Evolución Histórica Psicología", sem: 1, area: "basica" },
+        { id: "S1-5", nombre: "Procesos Cognitivos", sem: 1, area: "basica" },
+        { id: "S1-6", nombre: "Taller de Comunicación", sem: 1, area: "integral" },
+
+        // Semestre 2 [cite: 14]
+        { id: "S2-1", nombre: "Ética", sem: 2, area: "integral" },
+        { id: "S2-2", nombre: "Neuropsicología", sem: 2, area: "basica", req: ["S1-2"] },
+        { id: "S2-3", nombre: "Fund. Socioantropológicos", sem: 2, area: "basica" },
+        { id: "S2-4", nombre: "Intro. a la Investigación", sem: 2, area: "investigacion" },
+        { id: "S2-5", nombre: "Procesos Afectivos", sem: 2, area: "basica", req: ["S1-5"] },
+        { id: "S2-6", nombre: "Taller de Trabajo Grupal", sem: 2, area: "integral" },
+
+        // Semestre 3 [cite: 15, 39, 41, 51, 60]
+        { id: "S3-1", nombre: "Electivo Formación Integral I", sem: 3, area: "integral" },
+        { id: "S3-2", nombre: "Psicología Social I", sem: 3, area: "profesional", req: ["S2-3"] },
+        { id: "S3-3", nombre: "Teorías Psicológicas I", sem: 3, area: "profesional", req: ["S1-4"] },
+        { id: "S3-4", nombre: "Psicología Evolutiva I", sem: 3, area: "profesional" },
+        { id: "S3-5", nombre: "Metodología Inv. Aplicada", sem: 3, area: "investigacion", req: ["S2-4"] },
+        { id: "S3-6", nombre: "Psicología de la Personalidad", sem: 3, area: "profesional" },
+
+        // Semestre 4 [cite: 16, 40, 42, 52, 62, 63, 61]
+        { id: "S4-1", nombre: "Electivo Formación Integral II", sem: 4, area: "integral" },
+        { id: "S4-2", nombre: "Psicología Social II", sem: 4, area: "profesional", req: ["S3-2"] },
+        { id: "S4-3", nombre: "Teorías Psicológicas II", sem: 4, area: "profesional", req: ["S3-3"] },
+        { id: "S4-4", nombre: "Psicología Evolutiva II", sem: 4, area: "profesional", req: ["S3-4"] },
+        { id: "S4-5", nombre: "Análisis de Datos Cuantitativos", sem: 4, area: "investigacion", req: ["S3-5"] },
+        { id: "S4-6", nombre: "Psicopatología General", sem: 4, area: "basica" },
+        { id: "S4-7", nombre: "Taller de Entrevista", sem: 4, area: "profesional" },
+
+        // Semestre 5 [cite: 17, 53, 65, 64, 43]
+        { id: "S5-1", nombre: "Electivo Formación Integral III", sem: 5, area: "integral" },
+        { id: "S5-2", nombre: "Psicopatología Infantil", sem: 5, area: "profesional", req: ["S4-6"] },
+        { id: "S5-3", nombre: "Análisis de Datos Cualitativos", sem: 5, area: "investigacion", req: ["S3-5"] },
+        { id: "S5-4", nombre: "Evaluación Psicológica Cognitiva", sem: 5, area: "profesional" },
+        { id: "S5-5", nombre: "Intro. Psicoterapia Sistémica", sem: 5, area: "profesional", req: ["S4-3"] },
+
+        // Semestre 6 [cite: 18, 54, 44, 68, 66]
+        { id: "S6-1", nombre: "Electivo Formación Integral IV", sem: 6, area: "integral" },
+        { id: "S6-2", nombre: "Psicopatología Adulto", sem: 6, area: "profesional", req: ["S4-6"] },
+        { id: "S6-3", nombre: "Intro. Psicoterapia Humanista", sem: 6, area: "profesional", req: ["S4-3"] },
+        { id: "S6-4", nombre: "Eval. Psicológica Personalidad", sem: 6, area: "profesional", req: ["S3-6"] },
+        { id: "S6-5", nombre: "Políticas Públicas", sem: 6, area: "integral" },
+
+        // Semestre 7 [cite: 19, 55, 33, 68, 69, 70]
+        { id: "S7-1", nombre: "Comportamiento Organizacional", sem: 7, area: "profesional" },
+        { id: "S7-2", nombre: "Intro. Psicoterapia Psicoanalítica", sem: 7, area: "profesional", req: ["S4-3"] },
+        { id: "S7-3", nombre: "Evaluación Psicológica Integrada", sem: 7, area: "profesional", req: ["S6-4"] },
+        { id: "S7-4", nombre: "Factores Psicológicos Educativos", sem: 7, area: "profesional" },
+        { id: "S7-5", nombre: "Problemas Psicosociales Actuales", sem: 7, area: "profesional" },
+
+        // Semestre 8 [cite: 20, 56, 34, 72, 73, 71]
+        { id: "S8-1", nombre: "Gestión de Personas", sem: 8, area: "profesional", req: ["S7-1"] },
+        { id: "S8-2", nombre: "Intro. Psicoterapia Cognitiva", sem: 8, area: "profesional", req: ["S4-3"] },
+        { id: "S8-3", nombre: "Gestión Escolar", sem: 8, area: "profesional", req: ["S7-4"] },
+        { id: "S8-4", nombre: "Psicología Comunitaria", sem: 8, area: "profesional" },
+        { id: "S8-5", nombre: "Integración en Psicología", sem: 8, area: "profesional" },
+
+        // Semestre 9 [cite: 21, 35, 77]
+        { id: "S9-1", nombre: "Electivo Diseño I", sem: 9, area: "profesional" },
+        { id: "S9-2", nombre: "Electivo Diseño II", sem: 9, area: "profesional" },
+        { id: "S9-3", nombre: "Proyecto de Investigación", sem: 9, area: "investigacion", req: ["S5-3"] },
+        { id: "S9-4", nombre: "Taller Persona del Psicólogo", sem: 9, area: "integral" },
+
+        // Semestre 10 [cite: 22, 58, 78]
+        { id: "S10-1", nombre: "Práctica Profesional", sem: 10, area: "profesional", req: ["S9-1"] },
+        { id: "S10-2", nombre: "Seminario de Investigación", sem: 10, area: "investigacion", req: ["S9-3"] }
+    ];
+
+    function renderMalla() {
+        const container = document.getElementById('mallaGrid');
+        
+        // Crear columnas por semestre
+        for (let i = 1; i <= 10; i++) {
+            const col = document.createElement('div');
+            col.className = 'semestre-col';
+            
+            const header = document.createElement('div');
+            header.className = 'semestre-header';
+            header.innerText = 'Semestre ' + i;
+            col.appendChild(header);
+
+            // Filtrar y agregar asignaturas
+            const asignaturasSemestre = mallaData.filter(a => a.sem === i);
+            asignaturasSemestre.forEach(asig => {
+                const card = document.createElement('div');
+                card.className = `asignatura area-${asig.area}`;
+                card.innerText = asig.nombre;
+                card.id = asig.id;
+                
+                // Evento Click
+                card.onclick = () => toggleStatus(asig.id);
+                
+                // Evento Hover para prerrequisitos
+                card.onmouseenter = () => highlightPrereq(asig.req, true);
+                card.onmouseleave = () => highlightPrereq(asig.req, false);
+
+                col.appendChild(card);
+            });
+
+            container.appendChild(col);
+        }
+    }
+
+    function toggleStatus(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle('approved');
+    }
+
+    function highlightPrereq(reqIds, active) {
+        if (!reqIds) return;
+        reqIds.forEach(reqId => {
+            const el = document.getElementById(reqId);
+            if (el) {
+                if (active) el.classList.add('prerequisito-activo');
+                else el.classList.remove('prerequisito-activo');
+            }
+        });
+    }
+
+    // Iniciar
+    renderMalla();
+</script>
+
+</body>
+</html>
